@@ -8,42 +8,9 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <Grid x:Name="Rebus" Width="400" Height="400">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-
-            <Border Grid.Row="0" Grid.Column="1" BorderThickness="2" BorderBrush="Black">
-                <TextBlock Text="a" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
-            </Border>
-            <Border Grid.Row="1" Grid.Column="1" BorderThickness="2" BorderBrush="Black">
-                <TextBlock Text="a" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
-            </Border>
-            <Border Grid.Row="2" Grid.Column="1" BorderThickness="2" BorderBrush="Black">
-                <TextBlock Text="m" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
-            </Border>
-
-            <Border Grid.Row="1" Grid.Column="0" BorderThickness="2" BorderBrush="Black"></Border>
-            <Border Grid.Row="1" Grid.Column="2" BorderThickness="2" BorderBrush="Black"></Border>
-            <Border Grid.Row="1" Grid.Column="3" BorderThickness="2" BorderBrush="Black"></Border>
-            <Border Grid.Row="0" Grid.Column="3" BorderThickness="2" BorderBrush="Black"></Border>
-            <Border Grid.Row="1" Grid.Column="3" BorderThickness="2" BorderBrush="Black"></Border>
-            <Border Grid.Row="2" Grid.Column="3" BorderThickness="2" BorderBrush="Black"></Border>
-            <Border Grid.Row="3" Grid.Column="3" BorderThickness="2" BorderBrush="Black"></Border>
-            <Border Grid.Row="4" Grid.Column="3" BorderThickness="2" BorderBrush="Black"></Border>
+        <Grid x:Name="RebusParent" Width="280" Height="220">
+            
         </Grid>
-        <Button Content="Cycle" Click="Button_Click" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,100"></Button>
+        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="OutPut"></TextBlock>
     </Grid>
 </Page>

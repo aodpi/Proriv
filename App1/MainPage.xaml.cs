@@ -30,12 +30,12 @@ namespace App1
             this.Loaded += MainPage_Loaded;
         }
 
-        IList<string> rz;
         IList<string> _words;
-        int count = 0;
-        private void MainPage_Loaded(object sender, RoutedEventArgs e)
+        private async void MainPage_Loaded(object sender, RoutedEventArgs e)
         {
-            WordP wp = new WordP();
+            StorageFile sf = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///wordlist.txt", UriKind.Absolute));
+            _words = await FileIO.ReadLinesAsync(sf);
+            WordP wp = new WordP(_words);
             wp.Test(new int[11, 14]
             {
                 {   0,  0, -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
@@ -51,62 +51,38 @@ namespace App1
                 {  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 },
             }
             , 11, 14);
-            //StorageFile sf = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///wordlist.txt", UriKind.Absolute));
-            //_words = await FileIO.ReadLinesAsync(sf);
-            //WordP wp = new WordP(_words);
-            //string x = string.Empty;
-            //rz = wp.FindWordForIntersect("aam", 1, 4, 1);
-        }
-
-        public void DrawWord(string word)
-        {
-            if (Rebus.Children.Count > 0)
+            char[,] xtest = wp.FirstTest(11, 14);
+            string buffer = string.Empty;
+            RebusParent.HorizontalAlignment = HorizontalAlignment.Center;
+            RebusParent.VerticalAlignment = VerticalAlignment.Center;
+            for (int i = 0; i < 11; i++)
             {
-                for (int i = 0; i < Rebus.Children.Count; i++)
+                RebusParent.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
+                for (int j = 0; j < 14; j++)
                 {
-                    if (Rebus.Children[i].GetType()==typeof(TextBlock))
+                    RebusParent.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
+                    if (xtest[i,j]=='\0')
                     {
-                        Rebus.Children.RemoveAt(i);
+                        buffer += "* ";
                     }
+                    TextBlock xx = new TextBlock();
+                    if (xtest[i,j]=='\0')
+                    {
+                        xx.Text = "*";
+                    }
+                    else
+                    {
+                        xx.Text = xtest[i, j].ToString();
+                    }
+                    xx.HorizontalAlignment = HorizontalAlignment.Center;
+                    xx.VerticalAlignment = VerticalAlignment.Center;
+                    Grid.SetRow(xx, i);
+                    Grid.SetColumn(xx, j);
+                    RebusParent.Children.Add(xx);
                 }
-            }
-            ClearAll();
-
-            for (int i = 0; i < word.Length; i++)
-            {
-                TextBlock txt = new TextBlock();
-                txt.Text = word[i].ToString();
-                txt.HorizontalAlignment = HorizontalAlignment.Center;
-                txt.VerticalAlignment = VerticalAlignment.Center;
-                txt.Tag = "llt";
-                Grid.SetRow(txt, 1);
-                Grid.SetColumn(txt, i);
-                Rebus.Children.Add(txt);
-            }
-            
-            WordP wp = new WordP(_words);
-            string x = wp.FindWordForIntersect(word, word.Length-1, 5, 1)[0];
-            for (int i = 0; i < x.Length; i++)
-            {
-                TextBlock txt = new TextBlock();
-                txt.Text = x[i].ToString();
-                txt.HorizontalAlignment = HorizontalAlignment.Center;
-                txt.VerticalAlignment = VerticalAlignment.Center;
-                Grid.SetRow(txt, i);
-                txt.Tag = "llt";
-                Grid.SetColumn(txt, 3);
-                Rebus.Children.Add(txt);
+                buffer += Environment.NewLine;
             }
         }
-
-        public void ClearAll()
-        {
-            Rebus.Children.Clear();
-        }
-        
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            DrawWord(rz[count++]);
-        }
+       
     }
 }

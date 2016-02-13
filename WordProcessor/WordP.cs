@@ -7,8 +7,13 @@ using Windows.UI.Popups;
 
 namespace WordProcessor
 {
+    /// <summary>
+    /// Converts int array to char array with words.
+    /// </summary>
     public class WordP
     {
+        #region Fields
+        List<Rebus> arr = new List<Rebus>();
         IList<string> _words;
 
         public enum Orientation
@@ -16,10 +21,7 @@ namespace WordProcessor
             Horizontal,
             Vertical
         }
-        public WordP()
-        {
 
-        }
         public struct Rebus
         {
             public int xorigin, yorigin;
@@ -33,20 +35,42 @@ namespace WordProcessor
             public int xIntersect, yIntersect;
             public int IntersectId;
         }
+        #endregion
+
+        /// <summary>
+        /// Default constructor.
+        /// </summary>
+        /// <param name="Words">All the words found in the file.</param>
         public WordP(IList<string> Words)
         {
             this._words = Words;
             char[,] x = new char[3, 3];
             x[0, 0] = '1';
         }
-
+        
+        /// <summary>
+        /// Grouped found word in int array.
+        /// </summary>
+        public IEnumerable<IGrouping<int,Rebus>> Groups
+        {
+            get
+            {
+                return arr.GroupBy(a => a.length);
+            }
+        }
+        /// <summary>
+        /// Convert a bidimensional int array into a <see cref="List{<see cref="Rebus"/>}"/>
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="xmax"></param>
+        /// <param name="ymax"></param>
         public void Test(int[,] matrix, int xmax, int ymax)
         {
-            List<Rebus> arr = new List<Rebus>();
+            
             int i = 1, x, y;
             Rebus temp;
             //horizontal
-
+            
             for (x = 0; x < xmax; x++)
             {
                 y = 0;
@@ -118,8 +142,83 @@ namespace WordProcessor
                         x++;
                 }
             }
+            var asd = Groups;
         }
 
+        /// <summary>
+        /// Lungimea maxima a cuvintelor posibile.
+        /// </summary>
+        public int Max
+        {
+            get
+            {
+                int max = arr[0].length;
+                for (int i = 0; i < arr.Count; i++)
+                {
+                    if (arr[i].length > max)
+                    {
+                        max = arr[i].length;
+                    }
+                }
+                return max;
+            }
+        }
+        
+        /// <summary>
+        /// TestFunc
+        /// </summary>
+        /// <param name="xmax"></param>
+        /// <param name="ymax"></param>
+        /// <returns></returns>
+        public char[,] FirstTest(int xmax,int ymax)
+        {
+            char[,] result = new char[xmax, ymax];
+            string foundword = string.Empty;
+            IList<string> PWords = GetPossibleWords(Max);
+            for (int i = 0; i < arr.Count; i++)
+            {
+                switch (arr[i].orient)
+                {
+                    case Orientation.Horizontal:
+                        foreach (string item in PWords)
+                        {
+                            if (item.Length == arr[i].length)
+                            {
+                                for (int j = 0; j < item.Length; j++)
+                                {
+                                    result[arr[i].xorigin, arr[i].yorigin + j] = item[j];
+                                }
+                            }
+                        }
+                        break;
+                    case Orientation.Vertical:
+                        foreach (string item in PWords)
+                        {
+                            if (item.Length == arr[i].length)
+                            {
+                                for (int j = 0; j < item.Length; j++)
+                                {
+                                    result[arr[i].xorigin+j, arr[i].yorigin] = item[j];
+                                }
+                            }
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Returneaza cuvintele posibile de cuvinte cu numarul lungimii maximale a cuvintelor indicat.
+        /// </summary>
+        /// <param name="max">Lungimea maximala a cuvintelor.</param>
+        /// <returns></returns>
+        public IList<string> GetPossibleWords(int max)
+        {
+            return _words.Where(x => x.Length <= max).ToList();
+        }
 
         /// <summary>
         /// Gaseste cuvantul potrivit pentru intersectarea cu cuvintul introdus. 
