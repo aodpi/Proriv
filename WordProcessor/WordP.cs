@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -35,6 +36,21 @@ namespace WordProcessor
             public int xIntersect, yIntersect;
             public int IntersectId;
         }
+
+        public struct Restriction
+        {
+            public int XRestriction;
+            public int YRestriction;
+            public char Value;
+        }
+
+        public struct StackElement
+        {
+            public int Id;
+            public List<Restriction> Restrictions;
+            public int wordIndex;
+        }
+
         #endregion
 
         /// <summary>
@@ -51,11 +67,11 @@ namespace WordProcessor
         /// <summary>
         /// Grouped found word in int array.
         /// </summary>
-        public IEnumerable<IGrouping<int,Rebus>> Groups
+        public List<IGrouping<int,Rebus>> Groups
         {
             get
             {
-                return arr.GroupBy(a => a.length);
+                return arr.GroupBy(a => a.length).ToList();
             }
         }
         /// <summary>
@@ -67,8 +83,12 @@ namespace WordProcessor
         public void Test(int[,] matrix, int xmax, int ymax)
         {
             
+
             int i = 1, x, y;
             Rebus temp;
+
+
+
             //horizontal
             
             for (x = 0; x < xmax; x++)
@@ -163,7 +183,79 @@ namespace WordProcessor
                 return max;
             }
         }
-        
+
+        public StackElement? CreateStackElement(IGrouping<int, string> words, ref char[,] matrix, int wordIndex, int elementId, List<Restriction> restrictions)
+        {
+            int wCount = wordIndex;
+            bool flag = true;
+            if (restrictions.Count == 0)
+            {
+                var word = words.ElementAt(wCount++).ToCharArray();
+                WriteWord(matrix, elementId, word);
+            }
+            else
+
+                foreach(var word in words)
+                {
+                    flag = true;
+                    var rebus = arr[elementId];
+                    var wordArray = word.ToCharArray();
+                    foreach (var restriction in restrictions)
+                    {
+                        if (rebus.orient == Orientation.Horizontal)
+                        {
+                            if (wordArray[restriction.YRestriction - rebus.yorigin] != restriction.Value)
+                            {
+                                flag = false;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            if (wordArray[restriction.XRestriction - rebus.xorigin] != restriction.Value)
+                            {
+                                flag = false;
+                                break;
+                            }
+                        }
+                    }
+                    if (flag)
+                    {
+                        WriteWord(matrix, elementId, wordArray);
+                        wCount++;
+                        break;
+                    }
+                    
+                    wCount++;
+                }
+            if (!flag)
+                return null;
+            return new StackElement { Id = elementId, wordIndex = wCount, Restrictions = restrictions };
+        }
+
+        private void WriteWord(char[,] matrix, int elementId, char[] word)
+        {
+            for (int i = 0, len = arr[elementId].length; i < len; i++)
+            {
+                if (arr[elementId].orient == Orientation.Horizontal)
+                    matrix[arr[elementId].xorigin, arr[elementId].yorigin + i] = word[i];
+                else
+                    matrix[arr[elementId].xorigin + i, arr[elementId].yorigin] = word[i];
+            }
+        }
+
+        private void ClearWord(char[,] matrix, int elementId)
+        {
+            for (int i = 0, len = arr[elementId].length; i < len; i++)
+            {
+                if (arr[elementId].orient == Orientation.Horizontal)
+                    matrix[arr[elementId].xorigin, arr[elementId].yorigin + i] = '\0';
+                else
+                    matrix[arr[elementId].xorigin + i, arr[elementId].yorigin] = '\0';
+            }
+        }
+
+
         /// <summary>
         /// TestFunc
         /// </summary>
@@ -172,41 +264,103 @@ namespace WordProcessor
         /// <returns></returns>
         public char[,] FirstTest(int xmax,int ymax)
         {
+
             char[,] result = new char[xmax, ymax];
             string foundword = string.Empty;
             IList<string> PWords = GetPossibleWords(Max);
+            var groups = PWords.GroupBy(word => word.Length).ToList();
+
+            int wordIndex = 0;
+            Stack<StackElement> stack = new Stack<StackElement>();
+            
             for (int i = 0; i < arr.Count; i++)
             {
-                switch (arr[i].orient)
+                var restrictions = new List<Restriction>();
+                foreach (var item in arr[i].intersects)
                 {
-                    case Orientation.Horizontal:
-                        foreach (string item in PWords)
+                    if (result[item.xIntersect, item.yIntersect] != '\0')
+                    {
+                        restrictions.Add(new Restriction
                         {
-                            if (item.Length == arr[i].length)
-                            {
-                                for (int j = 0; j < item.Length; j++)
-                                {
-                                    result[arr[i].xorigin, arr[i].yorigin + j] = item[j];
-                                }
-                            }
-                        }
-                        break;
-                    case Orientation.Vertical:
-                        foreach (string item in PWords)
-                        {
-                            if (item.Length == arr[i].length)
-                            {
-                                for (int j = 0; j < item.Length; j++)
-                                {
-                                    result[arr[i].xorigin+j, arr[i].yorigin] = item[j];
-                                }
-                            }
-                        }
-                        break;
-                    default:
-                        break;
+                            XRestriction = item.xIntersect,
+                            YRestriction = item.yIntersect,
+                            Value = result[item.xIntersect, item.yIntersect]
+                        });
+                    }
                 }
+                var test = CreateStackElement(groups.Single(group => group.Key == arr[i].length), ref result, wordIndex , arr[i].Id - 1, restrictions);
+                StackElement element;
+                if (test.HasValue)
+                {
+                    element = test.Value;
+                    stack.Push(element);
+                    wordIndex = 0;
+                }
+                else
+                {
+                    element = stack.Pop();
+                    ClearWord(result, element.Id);
+                    foreach (var restriction in element.Restrictions)
+                    {
+                        result[restriction.XRestriction, restriction.YRestriction] = restriction.Value;
+                    }
+                    i--;
+                    wordIndex = element.wordIndex;
+                }
+
+
+                //foreach(var w in groups[arr[i].length])
+                //{
+                //    //if no contradiction;
+                //    foreach(var intersection in arr[i].intersects)
+                //    {
+                //        if(intersection.)
+                //    }
+                //    if(arr[i].intersects[])
+                //    arr[i].Value = w;
+                //}
+
+                //switch (arr[i].orient)
+                //{
+                //    case Orientation.Horizontal:
+                //        foreach (string item in PWords)
+                //        {
+                //            if (item.Length == arr[i].length)
+                //            {
+                //                for (int j = 0; j < item.Length; j++)
+                //                {
+                //                    result[arr[i].xorigin, arr[i].yorigin + j] = item[j];
+                //                }
+                //            }
+                //        }
+                //        break;
+                //    case Orientation.Vertical:
+                //        foreach (string item in PWords)
+                //        {
+                //            if (item.Length == arr[i].length)
+                //            {
+                //                for (int j = 0; j < item.Length; j++)
+                //                {
+                //                    result[arr[i].xorigin+j, arr[i].yorigin] = item[j];
+                //                }
+                //            }
+                //        }
+                //        break;
+                //    default:
+                //        break;
+                //}
             }
+
+            var s = string.Empty;
+            for (int x = 0; x < result.GetLength(0); x++)
+            {
+                for (int j = 0; j < result.GetLength(1); j++)
+                {
+                    s += result[x, j] == '\0' ? ' ' : result[x, j];
+                }
+                s += Environment.NewLine;
+            }
+            Debug.WriteLine(s);
             return result;
         }
 
