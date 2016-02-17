@@ -8,7 +8,7 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <Grid x:Name="RebusParent" Width="280" Height="220">
+        <Grid x:Name="RebusParent" Width="Auto" Height="Auto" HorizontalAlignment="Center" VerticalAlignment="Center">
             
         </Grid>
         <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="OutPut"></TextBlock>
