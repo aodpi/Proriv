@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -26,9 +27,13 @@ namespace App1
     {
         public MainPage()
         {
-            this.InitializeComponent();
-            this.Loaded += MainPage_Loaded;
+            InitializeComponent();
+            Loaded += MainPage_Loaded;
         }
+        
+        
+
+
 
         IList<string> _words;
         private async void MainPage_Loaded(object sender, RoutedEventArgs e)
@@ -36,42 +41,43 @@ namespace App1
             StorageFile sf = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///wordlist.txt", UriKind.Absolute));
             _words = await FileIO.ReadLinesAsync(sf);
             WordP wp = new WordP(_words);
-            //wp.Test(new int[11, 14]
-            //{
-            //    {   0,  0, -1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },
-            //    {   0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 },
-            //    {   0,  0, -1,  0,  0,  0,  0,  0, -1,  0,  0,  0,  0, -1 },
-            //    {  -1, -1, -1, -1,  0,  0,  0, -1, -1, -1, -1,  0,  0, -1 },
-            //    {   0,  0, -1,  0,  0,  0,  0,  0, -1,  0,  0,  0,  0, -1 },
-            //    {   0,  0, -1,  0,  0,  0,  0,  0, -1,  0,  0,  0,  0, -1 },
-            //    {   0,  0, -1,  0,  0,  0,  0,  0, -1,  0,  0,  0,  0, -1 },
-            //    {   0,  0, -1,  0,  0,  0,  0,  0, -1,  0,  0,  0,  0, -1 },
-            //    {   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, -1 },
-            //    {   0,  0, -1,  0,  0,  0,  0,  0, -1,  0,  0,  0,  0, -1 },
-            //    {  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 },
-            //}
-            //, 11, 14);
-            wp.Test(new int[9, 9]
+            var xxx = Stopwatch.StartNew();
+            wp.Test(new int[10, 10]
             {
-                {  -1, 0, -1, -1, 0, 0, 0, 0, 0 },
-                {  -1, 0, -1,  0, 0, 0, 0, 0, 0 },
-                {  -1, 0, -1, -1, 0, 0, 0, 0, 0 },
-                {  -1, 0, -1,  0, 0, 0, 0, 0, 0 },
-                {  -1, 0, -1, -1, 0, 0, 0, 0, 0 },
-                {  -1, 0, -1,  0, 0, 0, 0, 0, 0 },
-                {  -1, 0, -1, -1, 0, 0, 0, 0, 0 },
-                {  -1, 0, -1,  0, 0, 0, 0, 0, 0 },
-                {  -1, 0, -1, -1, 0, 0, 0, 0, 0 },
+                {0,0,1,0,0,0,0,1,0,0 },
+                {0,0,1,0,0,0,0,1,0,0 },
+                {1,1,1,0,0,1,0,1,0,0 },
+                {0,0,1,0,1,1,1,1,1,1 },
+                {0,0,1,0,0,1,0,1,0,0 },
+                {0,0,1,0,0,1,0,1,0,0 },
+                {0,0,1,0,0,1,0,0,0,0 },
+                {1,1,1,1,1,1,1,1,0,0 },
+                {0,0,1,0,0,0,0,0,0,0 },
+                {0,0,1,0,0,0,0,0,0,0 },
             }
-            , 9, 9);
-            char[,] xtest = wp.FirstTest(9, 9);
+            , 10, 10);
+            //wp.Test(new int[9, 9]
+            //{
+            //    {  -1, 0, -1, -1, 0, 0, 0, 0, 0 },
+            //    {  -1, 0, -1,  0, 0, 0, 0, 0, 0 },
+            //    {  -1, 0, -1, -1, 0, 0, 0, 0, 0 },
+            //    {  -1, 0, -1,  0, 0, 0, 0, 0, 0 },
+            //    {  -1, 0, -1, -1, 0, 0, 0, 0, 0 },
+            //    {  -1, 0, -1,  0, 0, 0, 0, 0, 0 },
+            //    {  -1, 0, -1, -1, 0, 0, 0, 0, 0 },
+            //    {  -1, 0, -1,  0, 0, 0, 0, 0, 0 },
+            //    {  -1, 0, -1, -1, 0, 0, 0, 0, 0 },
+            //}
+            //, 9, 9);
+            char[,] xtest = wp.FirstTest(10, 10);
+            xxx.Stop();
             string buffer = string.Empty;
             RebusParent.HorizontalAlignment = HorizontalAlignment.Center;
             RebusParent.VerticalAlignment = VerticalAlignment.Center;
-            for (int i = 0; i < 9; i++)
+            for (int i = 0; i < 10; i++)
             {
                 RebusParent.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
-                for (int j = 0; j < 9; j++)
+                for (int j = 0; j < 10; j++)
                 {
                     RebusParent.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
                     if (xtest[i,j]=='\0')
